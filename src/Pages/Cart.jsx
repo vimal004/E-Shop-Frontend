@@ -89,6 +89,7 @@ const Cart = () => {
           style={{ marginBottom: "16px" }}
         >
           Sign in to add items to the cart.
+          hello
         </Typography>
       </div>
     </div>
