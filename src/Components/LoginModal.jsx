@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { setLoggedIn, setUser } from "../Redux/Slices/userSlice";
 import axios from "axios";
+import { auth } from "../Firebase/firebaseConfig";
 import {
   Button,
   Dialog,
@@ -14,9 +15,11 @@ import {
   IconButton,
   Snackbar,
   useTheme,
+  Stack,
 } from "@mui/material";
-import { Close as CloseIcon } from "@mui/icons-material";
+import { Close as CloseIcon, Google as GoogleIcon } from "@mui/icons-material";
 import MuiAlert from "@mui/material/Alert";
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -34,6 +37,9 @@ const LoginModal = ({ open, onClose }) => {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const theme = useTheme();
 
+  const auth = getAuth();
+  const googleProvider = new GoogleAuthProvider();
+
   const handleLogin = (e) => {
     e.preventDefault();
     axios
@@ -43,7 +49,6 @@ const LoginModal = ({ open, onClose }) => {
       })
       .then((res) => {
         dispatch(setUser(res?.data));
-        console.log(res?.data?.email);
         localStorage.setItem("user", res?.data?.email);
         dispatch(setLoggedIn());
         onClose();
@@ -88,6 +93,25 @@ const LoginModal = ({ open, onClose }) => {
       });
   };
 
+  const handleGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+
+      dispatch(setUser(user));
+      localStorage.setItem("user", user.email);
+      dispatch(setLoggedIn());
+      onClose();
+      setSnackbarMessage("Google Login Successful!");
+      setSnackbarSeverity("success");
+      setSnackbarOpen(true);
+    } catch (error) {
+      setSnackbarMessage("Google Login Failed!");
+      setSnackbarSeverity("error");
+      setSnackbarOpen(true);
+    }
+  };
+
   const handleCloseSnackbar = () => {
     setSnackbarOpen(false);
   };
@@ -110,12 +134,9 @@ const LoginModal = ({ open, onClose }) => {
         PaperProps={{
           style: {
             borderRadius: 15,
-            padding: "10px 20px",
-            backgroundColor:
-              theme.palette.mode === "dark"
-                ? theme.palette.background.default
-                : "white",
-            color: theme.palette.mode === "dark" ? "white" : "black",
+            padding: "20px",
+            backgroundColor: theme.palette.mode === "dark" ? "#1e1e1e" : "#fff",
+            color: theme.palette.mode === "dark" ? "#fff" : "#000",
           },
         }}
       >
@@ -137,8 +158,8 @@ const LoginModal = ({ open, onClose }) => {
         <DialogContent>
           <DialogContentText>
             {isRegister
-              ? "Please enter your details to register."
-              : "Please enter your email and password."}
+              ? "Create an account to get started."
+              : "Please login to your account."}
           </DialogContentText>
           <TextField
             autoFocus
@@ -150,16 +171,6 @@ const LoginModal = ({ open, onClose }) => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             sx={{ marginBottom: 2 }}
-            InputProps={{
-              style: {
-                color: theme.palette.mode === "dark" ? "white" : "black",
-              },
-            }}
-            InputLabelProps={{
-              style: {
-                color: theme.palette.mode === "dark" ? "white" : "black",
-              },
-            }}
           />
           <TextField
             margin="dense"
@@ -169,19 +180,7 @@ const LoginModal = ({ open, onClose }) => {
             variant="outlined"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            error={error !== ""}
-            helperText={error}
             sx={{ marginBottom: 2 }}
-            InputProps={{
-              style: {
-                color: theme.palette.mode === "dark" ? "white" : "black",
-              },
-            }}
-            InputLabelProps={{
-              style: {
-                color: theme.palette.mode === "dark" ? "white" : "black",
-              },
-            }}
           />
           {isRegister && (
             <TextField
@@ -193,38 +192,62 @@ const LoginModal = ({ open, onClose }) => {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               sx={{ marginBottom: 2 }}
-              InputProps={{
-                style: {
-                  color: theme.palette.mode === "dark" ? "white" : "black",
-                },
-              }}
-              InputLabelProps={{
-                style: {
-                  color: theme.palette.mode === "dark" ? "white" : "black",
-                },
-              }}
             />
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleToggleMode} sx={{ borderRadius: 50 }}>
-            {isRegister
-              ? "Already have an account? Sign In"
-              : "Don't have an account? Register"}
-          </Button>
-          <Button onClick={onClose} sx={{ borderRadius: 50 }}>
-            Cancel
-          </Button>
-          <Button
-            onClick={isRegister ? handleRegister : handleLogin}
-            variant="contained"
-            color="primary"
-            sx={{ borderRadius: 50, boxShadow: 3 }}
+          <Stack
+            direction="column"
+            spacing={2}
+            sx={{ width: "100%", padding: "0 20px" }}
           >
-            {isRegister ? "Register" : "Login"}
-          </Button>
+            <Button
+              onClick={isRegister ? handleRegister : handleLogin}
+              variant="contained"
+              color="primary"
+              fullWidth
+              sx={{
+                borderRadius: 30,
+                padding: "10px 20px",
+                textTransform: "none",
+                boxShadow: 3,
+              }}
+            >
+              {isRegister ? "Register" : "Login"}
+            </Button>
+
+            <Button
+              variant="outlined"
+              startIcon={<GoogleIcon />}
+              onClick={handleGoogleLogin}
+              fullWidth
+              sx={{
+                borderRadius: 30,
+                padding: "10px 20px",
+                textTransform: "none",
+                boxShadow: 1,
+                borderColor: theme.palette.grey[500],
+              }}
+            >
+              Sign In with Google
+            </Button>
+
+            <Button
+              onClick={handleToggleMode}
+              fullWidth
+              sx={{
+                textTransform: "none",
+                color: theme.palette.primary.main,
+              }}
+            >
+              {isRegister
+                ? "Already have an account? Sign In"
+                : "Don't have an account? Register"}
+            </Button>
+          </Stack>
         </DialogActions>
       </Dialog>
+
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
