@@ -175,7 +175,7 @@ const Header = () => {
         ))}
       </div>
 
-      <div className="flex w-48 sm:w-64 mx-2 md:mx-4 relative" ref={searchRef}>
+      <div className="flex w-48 sm:w-40 mx-2 md:mx-4 relative" ref={searchRef}>
         <form>
           <input
             type="text"
