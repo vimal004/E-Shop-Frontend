@@ -10,7 +10,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import LoginSharp from "@mui/icons-material/LoginSharp";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleMode } from "./Redux/Slices/modeSlice";
-import { setLoggedIn, setLoggedOut } from "./Redux/Slices/userSlice";
+import { setLoggedIn } from "./Redux/Slices/userSlice";
 import LoginModal from "./Components/LoginModal";
 import UserDetailsModal from "./Components/UserDetailsModal";
 import { setsearch } from "./Redux/Slices/searchSlice";
@@ -23,7 +23,7 @@ const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [udm, setUdm] = useState(false);
-  const [homesearch, sethomeSearch] = useState("");
+  const [homesearch, setHomeSearch] = useState("");
   const [products, setProducts] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
   const [suggestionsVisible, setSuggestionsVisible] = useState(false);
@@ -32,25 +32,16 @@ const Header = () => {
   const searchRef = useRef(null);
 
   useEffect(() => {
-    if (
-      localStorage.getItem("user") != null &&
-      localStorage.getItem("user") != "" &&
-      localStorage.getItem("user") != undefined &&
-      localStorage.getItem("user") != "undefined" &&
-      localStorage.getItem("user") != "null"
-    ) {
+    if (localStorage.getItem("user")) {
       dispatch(setLoggedIn());
     }
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
-    if (
-      localStorage.getItem("darkMode") == true ||
-      localStorage.getItem("darkMode") == "true"
-    ) {
+    if (localStorage.getItem("darkMode") === "true") {
       dispatch(toggleMode());
     }
-  }, []);
+  }, [dispatch]);
 
   const categories = ["Electronics", "Clothing", "Sports", "Kitchen"];
 
@@ -67,7 +58,7 @@ const Header = () => {
 
   const handleSearchChange = (e) => {
     const query = e.target.value;
-    sethomeSearch(query);
+    setHomeSearch(query);
     dispatch(setsearch(query));
 
     const filteredSuggestions = products.filter((product) =>
@@ -101,7 +92,6 @@ const Header = () => {
   const handleDarkModeToggle = () => {
     dispatch(toggleMode());
     localStorage.setItem("darkMode", !darkMode);
-    console.log(localStorage.getItem("darkMode"));
   };
 
   const handleCloseLoginModal = () => {
@@ -117,9 +107,9 @@ const Header = () => {
   };
 
   useEffect(() => {
-    setsearch("");
-    sethomeSearch("");
-  }, [location.pathname]);
+    dispatch(setsearch(""));
+    setHomeSearch("");
+  }, [location.pathname, dispatch]);
 
   useEffect(() => {
     document.addEventListener("click", handleOutsideClick);
@@ -130,11 +120,11 @@ const Header = () => {
 
   return (
     <div
-      className={`flex items-center justify-between p-4 md:p-6 shadow-lg ${
+      className={`flex flex-col md:flex-row items-center justify-between p-4 md:p-6 shadow-lg ${
         darkMode ? "bg-gray-800" : "bg-white"
       }`}
     >
-      <div className="flex items-center space-x-2 md:space-x-4">
+      <div className="flex items-center space-x-2 m-1 md:space-x-4">
         <Link to={"/"} className="flex items-center space-x-2">
           <img
             className="h-10 w-10 md:h-12 md:w-12 rounded-full"
@@ -142,23 +132,22 @@ const Header = () => {
             alt="Logo"
           />
           <h1
-            className={`text-lg md:text-xl font-bold hidden sm:block ${
+            className={`text-lg md:text-xl font-bold sm:block ${
               darkMode ? "text-white" : ""
             }`}
           >
             E Shop
           </h1>
         </Link>
-      </div>
-
-      <div className="md:hidden flex items-center">
-        <IconButton
-          style={{ color: darkMode ? "#ffffff" : "black" }}
-          aria-label="menu"
-          onClick={handleMenuToggle}
-        >
-          {menuOpen ? <CloseIcon /> : <MenuIcon />}
-        </IconButton>
+        <div className="md:hidden items-center">
+          <IconButton
+            style={{ color: darkMode ? "#ffffff" : "black" }}
+            aria-label="menu"
+            onClick={handleMenuToggle}
+          >
+            {menuOpen ? <CloseIcon /> : <MenuIcon />}
+          </IconButton>
+        </div>
       </div>
 
       <div className="hidden md:flex justify-center space-x-6 text-gray-600">
@@ -175,7 +164,10 @@ const Header = () => {
         ))}
       </div>
 
-      <div className="flex w-48 sm:w-40 mx-2 md:mx-4 relative" ref={searchRef}>
+      <div
+        className="m-2 flex flex-grow max-w-xs md:max-w-md mx-2 md:mx-4 relative"
+        ref={searchRef}
+      >
         <form>
           <input
             type="text"
@@ -189,10 +181,7 @@ const Header = () => {
         </form>
 
         {suggestionsVisible && suggestions.length > 0 && (
-          <div
-            className={`absolute top-full left-0 right-0 bg-white shadow-lg rounded-lg z-10 bg-white text-black"
-            }`}
-          >
+          <div className="absolute top-full left-0 right-0 bg-white shadow-lg rounded-lg z-10 text-black">
             {suggestions.map((suggestion) => (
               <div
                 key={suggestion.id}
