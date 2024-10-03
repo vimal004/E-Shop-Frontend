@@ -33,11 +33,11 @@ const Header = () => {
 
   useEffect(() => {
     if (
-      localStorage.getItem("user") != "null" ||
-      localStorage.getItem("user") != null ||
-      localStorage.getItem("user") != undefined ||
-      localStorage.getItem("user") != "undefined" ||
-      localStorage.getItem("user") != "" ||
+      localStorage.getItem("user") != "null" &&
+      localStorage.getItem("user") != null &&
+      localStorage.getItem("user") != undefined &&
+      localStorage.getItem("user") != "undefined" &&
+      localStorage.getItem("user") != "" &&
       localStorage.getItem("user") != " "
     ) {
       dispatch(setLoggedIn());
