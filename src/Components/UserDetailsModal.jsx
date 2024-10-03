@@ -9,8 +9,9 @@ import {
   styled,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import { setLoggedOut } from "../Redux/Slices/userSlice";
+import { setAddress, setLoggedOut } from "../Redux/Slices/userSlice";
 import CloseIcon from "@mui/icons-material/Close";
+import axios from "axios";
 
 // Styling for the closeButton IconButton
 const CloseButton = styled(IconButton)(({ theme }) => ({
@@ -26,13 +27,27 @@ const UserDetailsModal = ({ open, onClose }) => {
 
   let userdets = localStorage.getItem("user");
   let address = useSelector((state) => state.user.address);
-  useEffect(() => {}, [address]);
 
   const handleLogout = () => {
     localStorage.setItem("user", null);
     dispatch(setLoggedOut());
     onClose(); // Close the modal after logging out
   };
+
+  useEffect(() => {
+    axios
+      .get("https://mern-project-backend-green.vercel.app/api/users/address", {
+        email: userdets,
+      })
+      .then((res) => {
+        dispatch(setAddress(res.data));
+        console.log(userdets);
+        console.log(res.data);
+      })
+      .catch((err) => {
+        console.log(err); 
+      });
+  }, [address]);
 
   useEffect(() => {}, [userdets]);
 
@@ -60,7 +75,7 @@ const UserDetailsModal = ({ open, onClose }) => {
           {user?.email || (userdets != "null" ? userdets : "--")}
           <br></br>
           <strong>Delivery Address:</strong>{" "}
-          {localStorage.getItem("address") || address}
+          {address}
         </Typography>
       </DialogContent>
       <DialogActions>
