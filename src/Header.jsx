@@ -32,7 +32,14 @@ const Header = () => {
   const searchRef = useRef(null);
 
   useEffect(() => {
-    if (localStorage.getItem("user") != "null") {
+    if (
+      localStorage.getItem("user") != "null" ||
+      localStorage.getItem("user") != null ||
+      localStorage.getItem("user") != undefined ||
+      localStorage.getItem("user") != "undefined" ||
+      localStorage.getItem("user") != "" ||
+      localStorage.getItem("user") != " "
+    ) {
       dispatch(setLoggedIn());
     }
   }, [dispatch]);
