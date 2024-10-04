@@ -100,6 +100,20 @@ const LoginModal = ({ open, onClose }) => {
 
       dispatch(setUser(user));
       localStorage.setItem("user", user.email);
+      axios
+        .post(
+          "https://mern-project-backend-green.vercel.app/api/users/firebaseLogin",
+          {
+            email: user.email,
+            displayName: user.displayName,  
+          }
+        )
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
       dispatch(setLoggedIn());
       onClose();
       setSnackbarMessage("Google Login Successful!");
