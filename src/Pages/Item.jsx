@@ -13,7 +13,6 @@ import {
   Snackbar,
 } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
-import { set } from "mongoose";
 
 const Item = () => {
   const navigate = useNavigate();
@@ -23,7 +22,10 @@ const Item = () => {
   const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState(false);
   const [inStock] = useState(true);
-  const [reviews,setReviews] = useState([]);
+  const [reviews] = useState([
+    { name: "Alice", rating: 5, comment: "Great product!" },
+    { name: "Bob", rating: 4, comment: "Very good, but could be improved." },
+  ]);
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -57,22 +59,6 @@ const Item = () => {
   }, [id]);
 
   useEffect(() => {
-    if (id) {
-      axios
-        .get(`https://mern-project-backend-green.vercel.app/api/users/review`, {
-          params: { product_name: id },
-        })
-        .then((res) => {
-          console.log(res.data.reviews);
-          setReviews(res.data.reviews);
-        })
-        .catch(() => {
-          console.log("Failed to fetch reviews");
-        });
-    }
-  }, [id]);
-
-  useEffect(() => {
     if (data) {
       axios
         .post(
@@ -93,6 +79,7 @@ const Item = () => {
 
   const handleQtyChange = (event) => {
     const newQty = event.target.value;
+    console.log(`Quantity of ${data.product_name} changed to ${newQty}`);
     data.qty = parseInt(newQty);
     axios.put("https://mern-project-backend-green.vercel.app/api/users/qty", {
       email: data.email,
@@ -152,19 +139,21 @@ const Item = () => {
   }
 
   return (
-    <div
-      className={`p-6 grid gap-8 md:grid-cols-2 ${
+    <Grid
+      container
+      className={`p-6 ${
         currmode ? "bg-gray-700 text-white" : "bg-white text-black"
       }`}
+      spacing={2}
     >
-      <div>
+      <Grid item xs={12} md={6}>
         <img
-          className="w-full h-auto max-w-md object-cover rounded"
+          className="w-70 h-70 object-cover rounded mx-8"
           src={data.image_link}
           alt={data.product_name}
         />
-      </div>
-      <div className="md:pl-6">
+      </Grid>
+      <Grid item xs={12} md={6} className="md:pl-6">
         <Typography variant="h4" className="mb-4">
           {data.product_name}
         </Typography>
@@ -222,7 +211,9 @@ const Item = () => {
               value={data.qty}
               onChange={handleQtyChange}
               label="Qty"
-              className={`${currmode ? "text-white" : "text-black"} bg-white`}
+              className={`${
+                currmode ? "text-white" : "text-black"
+              } bg-white rounded`}
             >
               {[...Array(10).keys()].map((i) => (
                 <MenuItem key={i + 1} value={i + 1}>
@@ -232,10 +223,8 @@ const Item = () => {
             </Select>
           </FormControl>
         </div>
-      </div>
-
-      {/* Customer Reviews Section */}
-      <div className="col-span-2">
+      </Grid>
+      <Grid item xs={12}>
         <Typography
           variant="h5"
           className={`mb-4 ${currmode ? "text-white" : "text-black"}`}
@@ -259,15 +248,13 @@ const Item = () => {
               >
                 Rating: {review.rating} / 5
               </Typography>
-              <Typography variant="body1">{review.comments}</Typography>
+              <Typography variant="body1">{review.comment}</Typography>
             </div>
           ))
         ) : (
           <Typography variant="body1">No reviews yet.</Typography>
         )}
-      </div>
-
-      {/* Snackbar for Add/Remove Cart */}
+      </Grid>
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
@@ -283,7 +270,7 @@ const Item = () => {
           {snackbarMessage}
         </MuiAlert>
       </Snackbar>
-    </div>
+    </Grid>
   );
 };
 
