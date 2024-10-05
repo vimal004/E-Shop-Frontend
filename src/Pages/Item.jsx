@@ -79,7 +79,6 @@ const Item = () => {
 
   const handleQtyChange = (event) => {
     const newQty = event.target.value;
-    console.log(`Quantity of ${data.product_name} changed to ${newQty}`);
     data.qty = parseInt(newQty);
     axios.put("https://mern-project-backend-green.vercel.app/api/users/qty", {
       email: data.email,
@@ -139,21 +138,19 @@ const Item = () => {
   }
 
   return (
-    <Grid
-      container
-      className={`p-6 ${
+    <div
+      className={`p-6 grid gap-8 md:grid-cols-2 ${
         currmode ? "bg-gray-700 text-white" : "bg-white text-black"
       }`}
-      spacing={2}
     >
-      <Grid item xs={12} md={6}>
+      <div>
         <img
-          className="w-70 h-70 object-cover rounded mx-8"
+          className="w-full h-auto max-w-md object-cover rounded"
           src={data.image_link}
           alt={data.product_name}
         />
-      </Grid>
-      <Grid item xs={12} md={6} className="md:pl-6">
+      </div>
+      <div className="md:pl-6">
         <Typography variant="h4" className="mb-4">
           {data.product_name}
         </Typography>
@@ -211,9 +208,7 @@ const Item = () => {
               value={data.qty}
               onChange={handleQtyChange}
               label="Qty"
-              className={`${
-                currmode ? "text-white" : "text-black"
-              } bg-white rounded`}
+              className={`${currmode ? "text-white" : "text-black"} bg-white`}
             >
               {[...Array(10).keys()].map((i) => (
                 <MenuItem key={i + 1} value={i + 1}>
@@ -223,8 +218,10 @@ const Item = () => {
             </Select>
           </FormControl>
         </div>
-      </Grid>
-      <Grid item xs={12}>
+      </div>
+
+      {/* Customer Reviews Section */}
+      <div className="col-span-2">
         <Typography
           variant="h5"
           className={`mb-4 ${currmode ? "text-white" : "text-black"}`}
@@ -254,7 +251,9 @@ const Item = () => {
         ) : (
           <Typography variant="body1">No reviews yet.</Typography>
         )}
-      </Grid>
+      </div>
+
+      {/* Snackbar for Add/Remove Cart */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
@@ -270,7 +269,7 @@ const Item = () => {
           {snackbarMessage}
         </MuiAlert>
       </Snackbar>
-    </Grid>
+    </div>
   );
 };
 
