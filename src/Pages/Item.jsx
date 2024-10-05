@@ -13,6 +13,7 @@ import {
   Snackbar,
 } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
+import { set } from "mongoose";
 
 const Item = () => {
   const navigate = useNavigate();
@@ -22,10 +23,7 @@ const Item = () => {
   const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState(false);
   const [inStock] = useState(true);
-  const [reviews] = useState([
-    { name: "Alice", rating: 5, comment: "Great product!" },
-    { name: "Bob", rating: 4, comment: "Very good, but could be improved." },
-  ]);
+  const [reviews,setReviews] = useState([]);
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -56,6 +54,22 @@ const Item = () => {
         console.log("error fetching data");
         setLoading(false);
       });
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      axios
+        .get(`https://mern-project-backend-green.vercel.app/api/users/review`, {
+          params: { product_name: id },
+        })
+        .then((res) => {
+          console.log(res.data.reviews);
+          setReviews(res.data.reviews);
+        })
+        .catch(() => {
+          console.log("Failed to fetch reviews");
+        });
+    }
   }, [id]);
 
   useEffect(() => {
@@ -245,7 +259,7 @@ const Item = () => {
               >
                 Rating: {review.rating} / 5
               </Typography>
-              <Typography variant="body1">{review.comment}</Typography>
+              <Typography variant="body1">{review.comments}</Typography>
             </div>
           ))
         ) : (
