@@ -11,8 +11,34 @@ import {
   FormControl,
   InputLabel,
   Snackbar,
+  TextField,
+  Rating,
+  Box,
+  Card,
+  CardContent,
+  CardActions,
+  CircularProgress,
+  Slide,
 } from "@mui/material";
 import MuiAlert from "@mui/material/Alert";
+import { styled } from "@mui/system";
+
+// Styled button with hover animations
+const StyledButton = styled(Button)(({ theme }) => ({
+  transition: "all 0.3s ease",
+  "&:hover": {
+    transform: "scale(1.05)",
+  },
+}));
+
+const StyledCard = styled(Card)(({ theme }) => ({
+  marginBottom: theme.spacing(3),
+  padding: theme.spacing(2),
+  transition: "transform 0.3s ease",
+  "&:hover": {
+    transform: "scale(1.03)",
+  },
+}));
 
 const Item = () => {
   const navigate = useNavigate();
@@ -26,6 +52,10 @@ const Item = () => {
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  const [reviewName, setReviewName] = useState("");
+  const [reviewComments, setReviewComments] = useState("");
+  const [reviewRating, setReviewRating] = useState(0);
 
   const handleSnackbarClose = (event, reason) => {
     if (reason === "clickaway") {
@@ -64,20 +94,14 @@ const Item = () => {
         }
       )
       .then((res) => {
-        if (
-          res.data !== null &&
-          res.data.reviews !== null &&
-          res.data.reviews.length > 0 &&
-          res.data.reviews != undefined
-        ) {
+        if (res.data && res.data.reviews && res.data.reviews.length > 0) {
           setReviews(res.data.reviews);
-          console.log(res.data.reviews);
         }
       })
       .catch(() => {
         console.log("error fetching reviews");
       });
-  }, []);
+  }, [id]);
 
   useEffect(() => {
     if (data) {
@@ -100,7 +124,6 @@ const Item = () => {
 
   const handleQtyChange = (event) => {
     const newQty = event.target.value;
-    console.log(`Quantity of ${data.product_name} changed to ${newQty}`);
     data.qty = parseInt(newQty);
     axios.put("https://mern-project-backend-green.vercel.app/api/users/qty", {
       email: data.email,
@@ -144,18 +167,57 @@ const Item = () => {
       });
   };
 
+  const handleReviewSubmit = () => {
+    if (reviewName && reviewComments && reviewRating) {
+      axios
+        .post(
+          "https://mern-project-backend-green.vercel.app/api/users/review",
+          {
+            product_name: id,
+            name: reviewName,
+            comments: reviewComments,
+            rating: reviewRating,
+          }
+        )
+        .then(() => {
+          setReviews([
+            ...reviews,
+            {
+              name: reviewName,
+              comments: reviewComments,
+              rating: reviewRating,
+            },
+          ]);
+          handleSnackbarOpen("Review added successfully");
+          setReviewName("");
+          setReviewComments("");
+          setReviewRating(0);
+        })
+        .catch(() => {
+          handleSnackbarOpen("Failed to add review");
+        });
+    } else {
+      handleSnackbarOpen("Please fill all fields");
+    }
+  };
+
+  // Calculate the average rating
+  const averageRating =
+    reviews.length > 0
+      ? (
+          reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length
+        ).toFixed(1)
+      : 0;
+
   if (loading) {
     return (
-      <div
-        className={`p-6 min-h-screen ${
+      <Box
+        className={`min-h-screen flex justify-center items-center ${
           currmode ? "bg-gray-700 text-white" : "bg-white text-black"
         }`}
       >
-        <div className="flex justify-center items-center h-full">
-          <div className="spinner-border animate-spin inline-block w-8 h-8 border-4 rounded-full text-blue-500"></div>
-          <span className="ml-2">Loading...</span>
-        </div>
-      </div>
+        <CircularProgress color="primary" />
+      </Box>
     );
   }
 
@@ -165,7 +227,7 @@ const Item = () => {
       className={`p-6 ${
         currmode ? "bg-gray-700 text-white" : "bg-white text-black"
       }`}
-      spacing={2}
+      spacing={4}
     >
       <Grid item xs={12} md={6}>
         <img
@@ -174,20 +236,24 @@ const Item = () => {
           alt={data.product_name}
         />
       </Grid>
-      <Grid item xs={12} md={6} className="md:pl-6">
-        <Typography variant="h4" className="mb-4">
+
+      <Grid item xs={12} md={6}>
+        <Typography variant="h4" gutterBottom>
           {data.product_name}
         </Typography>
-        <Typography variant="h5" className="text-gray-700 mb-4">
-          {data.price}
+        <Typography variant="h5" color="primary" gutterBottom>
+          ${data.price}
         </Typography>
-        <Typography
-          variant="body1"
-          className={`mb-4 ${currmode ? "text-yellow-400" : "text-yellow-500"}`}
-        >
-          Rating: {data.rating} / 5
-        </Typography>
-        <Typography variant="body1" className="mb-6">
+        <Box display="flex" alignItems="center" mb={2}>
+          <Typography variant="body1" color="secondary" gutterBottom>
+            Rating:{" "}
+          </Typography>
+          <Rating value={parseFloat(averageRating)} readOnly />
+          <Typography variant="body1" ml={2}>
+            ({averageRating}/5 from {reviews.length} reviews)
+          </Typography>
+        </Box>
+        <Typography variant="body1" gutterBottom>
           Features:
         </Typography>
         <ul className="list-disc list-inside mb-6">
@@ -195,97 +261,128 @@ const Item = () => {
             <li key={index}>{feature}</li>
           ))}
         </ul>
+
         <div className="mb-6">
           {inStock ? (
-            <span className="text-green-500">In Stock</span>
+            <Typography variant="body1" color="success.main">
+              In Stock
+            </Typography>
           ) : (
-            <span className="text-red-500">Out of Stock</span>
+            <Typography variant="body1" color="error.main">
+              Out of Stock
+            </Typography>
           )}
         </div>
-        <div className="flex gap-4 mb-6 items-center">
-          <Button
+
+        <Box display="flex" gap={2} alignItems="center" mb={4}>
+          <StyledButton
             variant="contained"
-            className={`bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 transition ${
-              currmode ? "hover:bg-blue-600" : "hover:bg-blue-700"
-            }`}
-            onClick={() => {
-              cart ? handleDeleteCart() : handleAddToCart();
-            }}
+            color={cart ? "error" : "primary"}
+            onClick={() => (cart ? handleDeleteCart() : handleAddToCart())}
           >
-            {cart ? "Delete from Cart" : "Add to Cart"}
-          </Button>
-          <Button
+            {cart ? "Remove from Cart" : "Add to Cart"}
+          </StyledButton>
+          <StyledButton
             variant="contained"
-            className={`bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 transition ${
-              currmode ? "hover:bg-green-600" : "hover:bg-green-700"
-            }`}
+            color="success"
             onClick={() => {
               handleAddToCart();
               navigate("/checkout");
             }}
           >
             Buy Now
-          </Button>
+          </StyledButton>
           <FormControl variant="outlined" className="w-24">
             <InputLabel>Qty</InputLabel>
             <Select
               value={data.qty}
               onChange={handleQtyChange}
               label="Qty"
-              className={`${
-                currmode ? "text-white" : "text-black"
-              } bg-white rounded`}
+              className={`${currmode ? "text-white" : "text-black"}`}
             >
-              {[...Array(10).keys()].map((i) => (
-                <MenuItem key={i + 1} value={i + 1}>
-                  {i + 1}
+              {[...Array(10).keys()].map((val) => (
+                <MenuItem key={val + 1} value={val + 1}>
+                  {val + 1}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
-        </div>
+        </Box>
       </Grid>
+
+      {/* Review Section */}
       <Grid item xs={12}>
-        <Typography
-          variant="h5"
-          className={`mb-4 ${currmode ? "text-white" : "text-black"}`}
-        >
+        <Typography variant="h5" className="mb-4">
           Customer Reviews
         </Typography>
         {reviews.length > 0 ? (
           reviews.map((review, index) => (
-            <div
-              key={index}
-              className={`mb-4 p-4 border rounded ${
-                currmode ? "border-gray-600" : "border-gray-300"
-              }`}
-            >
-              <Typography variant="h6">{review.name}</Typography>
-              <Typography
-                variant="body1"
-                className={`text-yellow-500 ${
-                  currmode ? "text-yellow-400" : "text-yellow-500"
-                }`}
-              >
-                Rating: {review.rating} / 5
-              </Typography>
-              <Typography variant="body1">{review.comments}</Typography>
-            </div>
+            <StyledCard key={index}>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  {review.name}
+                </Typography>
+                <Rating value={review.rating} readOnly />
+                <Typography variant="body1" gutterBottom>
+                  {review.comments}
+                </Typography>
+              </CardContent>
+            </StyledCard>
           ))
         ) : (
-          <Typography variant="body1">No reviews yet.</Typography>
+          <Typography variant="body1">No reviews yet</Typography>
         )}
       </Grid>
+
+      {/* New Review Form */}
+      <Grid item xs={12}>
+        <Typography variant="h5" className="mb-4">
+          Add a Review
+        </Typography>
+        <Box component="form" noValidate autoComplete="off">
+          <TextField
+            label="Name"
+            variant="outlined"
+            fullWidth
+            value={reviewName}
+            onChange={(e) => setReviewName(e.target.value)}
+            className="mb-4"
+          />
+          <TextField
+            label="Comments"
+            variant="outlined"
+            fullWidth
+            multiline
+            rows={4}
+            value={reviewComments}
+            onChange={(e) => setReviewComments(e.target.value)}
+            className="mb-4"
+          />
+          <Rating
+            name="rating"
+            value={reviewRating}
+            onChange={(e, newValue) => setReviewRating(newValue)}
+            className="mb-4"
+          />
+          <StyledButton
+            variant="contained"
+            onClick={handleReviewSubmit}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+          >
+            Submit Review
+          </StyledButton>
+        </Box>
+      </Grid>
+
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        TransitionComponent={Slide}
       >
         <MuiAlert
-          variant="filled"
           onClose={handleSnackbarClose}
-          severity={snackbarMessage.includes("Removed") ? "error" : "success"}
+          severity="success"
           sx={{ width: "100%" }}
         >
           {snackbarMessage}
