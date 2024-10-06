@@ -241,11 +241,11 @@ const Item = () => {
         <Typography variant="h4" gutterBottom>
           {data.product_name}
         </Typography>
-        <Typography variant="h5" color="primary" gutterBottom>
-          ${data.price}
+        <Typography variant="h5" gutterBottom>
+          {data.price}
         </Typography>
         <Box display="flex" alignItems="center" mb={2}>
-          <Typography variant="body1" color="secondary" gutterBottom>
+          <Typography variant="body1" gutterBottom>
             Rating:{" "}
           </Typography>
           <Rating value={parseFloat(averageRating)} readOnly />
@@ -313,7 +313,7 @@ const Item = () => {
       {/* Review Section */}
       <Grid item xs={12}>
         <Typography variant="h5" className="mb-4">
-          Customer Reviews
+          <strong>Customer Reviews</strong>
         </Typography>
         {reviews.length > 0 ? (
           reviews.map((review, index) => (
@@ -336,41 +336,83 @@ const Item = () => {
 
       {/* New Review Form */}
       <Grid item xs={12}>
-        <Typography variant="h5" className="mb-4">
+        <Typography variant="h5" gutterBottom align="center">
           Add a Review
         </Typography>
-        <Box component="form" noValidate autoComplete="off">
-          <TextField
-            label="Name"
-            variant="outlined"
-            fullWidth
-            value={reviewName}
-            onChange={(e) => setReviewName(e.target.value)}
-            className="mb-4"
-          />
-          <TextField
-            label="Comments"
-            variant="outlined"
-            fullWidth
-            multiline
-            rows={4}
-            value={reviewComments}
-            onChange={(e) => setReviewComments(e.target.value)}
-            className="mb-4"
-          />
-          <Rating
-            name="rating"
-            value={reviewRating}
-            onChange={(e, newValue) => setReviewRating(newValue)}
-            className="mb-4"
-          />
-          <StyledButton
-            variant="contained"
-            onClick={handleReviewSubmit}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-          >
-            Submit Review
-          </StyledButton>
+
+        {/* Form Wrapper with Padding */}
+        <Box
+          component="form"
+          noValidate
+          autoComplete="off"
+          sx={{
+            maxWidth: 600,
+            margin: "auto",
+            padding: 4,
+            boxShadow: "0px 4px 12px rgba(0,0,0,0.1)",
+            borderRadius: "10px",
+            backgroundColor: "#fafafa",
+          }}
+        >
+          {/* Name Field */}
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <TextField
+                label="Your Name"
+                variant="outlined"
+                fullWidth
+                value={reviewName}
+                onChange={(e) => setReviewName(e.target.value)}
+              />
+            </Grid>
+
+            {/* Comments Field */}
+            <Grid item xs={12}>
+              <TextField
+                label="Comments"
+                variant="outlined"
+                fullWidth
+                multiline
+                rows={4}
+                value={reviewComments}
+                onChange={(e) => setReviewComments(e.target.value)}
+              />
+            </Grid>
+
+            {/* Rating Field */}
+            <Grid item xs={12} align="center">
+              <Typography variant="body1" gutterBottom>
+                Your Rating
+              </Typography>
+              <Rating
+                name="rating"
+                value={reviewRating}
+                onChange={(e, newValue) => setReviewRating(newValue)}
+                size="large"
+              />
+            </Grid>
+
+            {/* Submit Button */}
+            <Grid item xs={12} align="center">
+              <StyledButton
+                variant="contained"
+                sx={{
+                  backgroundColor: "#3f51b5",
+                  color: "#fff",
+                  padding: "10px 20px",
+                  fontSize: "16px",
+                  textTransform: "none",
+                  borderRadius: "8px",
+                  "&:hover": {
+                    backgroundColor: "#303f9f",
+                  },
+                }}
+                onClick={handleReviewSubmit}
+              >
+                Submit Review
+              </StyledButton>
+            </Grid>
+          </Grid>
         </Box>
       </Grid>
 
