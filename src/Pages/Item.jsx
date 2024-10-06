@@ -410,14 +410,20 @@ const Item = () => {
               },
             }}
           />
-          {/* Add the Rating component here if needed */}
-          <Button
-            onClick={handleReviewSubmit}
-            variant="contained"
-            color="primary"
-          >
-            Submit Review
-          </Button>
+          <Rating
+            value={reviewRating}
+            onChange={(event, newValue) => setReviewRating(newValue)}
+            sx={{ color: "gold" }} // White color for rating in dark mode
+          />
+          <div className="">
+            <Button
+              onClick={handleReviewSubmit}
+              variant="contained"
+              color="primary"
+            >
+              Submit Review
+            </Button>
+          </div>
         </Box>
       </Grid>
 
