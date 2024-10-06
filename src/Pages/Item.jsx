@@ -23,7 +23,7 @@ import {
 import MuiAlert from "@mui/material/Alert";
 import { styled } from "@mui/system";
 
-// Styled button with hover animations
+// Styled components
 const StyledButton = styled(Button)(({ theme }) => ({
   transition: "all 0.3s ease",
   "&:hover": {
@@ -34,9 +34,11 @@ const StyledButton = styled(Button)(({ theme }) => ({
 const StyledCard = styled(Card)(({ theme }) => ({
   marginBottom: theme.spacing(3),
   padding: theme.spacing(2),
+  borderRadius: "15px", // Curved edges
+  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)", // Soft shadow for depth
   transition: "transform 0.3s ease",
   "&:hover": {
-    transform: "scale(1.03)",
+    transform: "scale(1.02)",
   },
 }));
 
@@ -231,7 +233,7 @@ const Item = () => {
     >
       <Grid item xs={12} md={6}>
         <img
-          className="w-70 h-70 object-cover rounded mx-8"
+          className="w-full h-auto object-cover rounded-lg"
           src={data.image_link}
           alt={data.product_name}
         />
@@ -310,109 +312,112 @@ const Item = () => {
         </Box>
       </Grid>
 
-      {/* Review Section */}
       <Grid item xs={12}>
-        <Typography variant="h5" className="mb-4">
-          <strong>Customer Reviews</strong>
+        <Typography variant="h5" gutterBottom>
+          Reviews
         </Typography>
-        {reviews.length > 0 ? (
-          reviews.map((review, index) => (
-            <StyledCard key={index}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  {review.name}
-                </Typography>
-                <Rating value={review.rating} readOnly />
-                <Typography variant="body1" gutterBottom>
-                  {review.comments}
-                </Typography>
-              </CardContent>
-            </StyledCard>
-          ))
-        ) : (
-          <Typography variant="body1">No reviews yet</Typography>
-        )}
-      </Grid>
+        <Box mb={2}>
+          <Typography variant="body1">
+            Average Rating: {averageRating}/5
+          </Typography>
+          <Rating value={parseFloat(averageRating)} readOnly />
+        </Box>
+        {reviews.map((review, index) => (
+          <StyledCard key={index}>
+            <CardContent>
+              <Typography variant="h6">{review.name}</Typography>
+              <Rating value={review.rating} readOnly />
+              <Typography variant="body2" color="text.secondary">
+                {review.comments}
+              </Typography>
+            </CardContent>
+          </StyledCard>
+        ))}
 
-      {/* New Review Form */}
-      <Grid item xs={12}>
-        <Typography variant="h5" gutterBottom align="center">
-          Add a Review
-        </Typography>
-
-        {/* Form Wrapper with Padding */}
         <Box
-          component="form"
-          noValidate
-          autoComplete="off"
+          mt={4}
           sx={{
-            maxWidth: 600,
-            margin: "auto",
-            padding: 4,
-            boxShadow: "0px 4px 12px rgba(0,0,0,0.1)",
-            borderRadius: "10px",
-            backgroundColor: "#fafafa",
+            backgroundColor: currmode ? "#3030" : "white", // Dark gray for dark mode, light gray for light mode
+            padding: "16px",
+            borderRadius: "8px",
+            border: currmode ? "1px solid #fff" : "1px solid #000", // White border for dark mode, black for light mode
           }}
         >
-          {/* Name Field */}
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <TextField
-                label="Your Name"
-                variant="outlined"
-                fullWidth
-                value={reviewName}
-                onChange={(e) => setReviewName(e.target.value)}
-              />
-            </Grid>
-
-            {/* Comments Field */}
-            <Grid item xs={12}>
-              <TextField
-                label="Comments"
-                variant="outlined"
-                fullWidth
-                multiline
-                rows={4}
-                value={reviewComments}
-                onChange={(e) => setReviewComments(e.target.value)}
-              />
-            </Grid>
-
-            {/* Rating Field */}
-            <Grid item xs={12} align="center">
-              <Typography variant="body1" gutterBottom>
-                Your Rating
-              </Typography>
-              <Rating
-                name="rating"
-                value={reviewRating}
-                onChange={(e, newValue) => setReviewRating(newValue)}
-                size="large"
-              />
-            </Grid>
-
-            {/* Submit Button */}
-            <Grid item xs={12} align="center">
-              <StyledButton
-                variant="contained"
-                sx={{
-                  backgroundColor: "#3f51b5",
-                  color: "#fff",
-                  padding: "10px 20px",
-                  fontSize: "16px",
-                  textTransform: "none",
-                  borderRadius: "8px",
-                  "&:hover": {
-                    backgroundColor: "#303f9f",
-                  },
-                }}
-                onClick={handleReviewSubmit}
-              >
-                Submit Review
-              </StyledButton>
-            </Grid>
-          </Grid>
+          <Typography variant="h6" sx={{ color: currmode ? "#fff" : "#000" }}>
+            Add a Review
+          </Typography>
+          <TextField
+            label="Name"
+            variant="outlined"
+            fullWidth
+            value={reviewName}
+            onChange={(e) => setReviewName(e.target.value)}
+            margin="normal"
+            InputProps={{
+              style: {
+                color: currmode ? "#fff" : "#000", // White text in dark mode, black in light mode
+              },
+            }}
+            InputLabelProps={{
+              style: {
+                color: currmode ? "#fff" : "#000", // White label in dark mode, black in light mode
+              },
+            }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: currmode ? "#fff" : "#000", // White outline in dark mode, black in light mode
+                },
+                "&:hover fieldset": {
+                  borderColor: currmode ? "#fff" : "#000",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: currmode ? "#fff" : "#000",
+                },
+              },
+            }}
+          />
+          <TextField
+            label="Comments"
+            variant="outlined"
+            fullWidth
+            multiline
+            rows={4}
+            value={reviewComments}
+            onChange={(e) => setReviewComments(e.target.value)}
+            margin="normal"
+            InputProps={{
+              style: {
+                color: currmode ? "#fff" : "#000",
+              },
+            }}
+            InputLabelProps={{
+              style: {
+                color: currmode ? "#fff" : "#000",
+              },
+            }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: currmode ? "#fff" : "#000",
+                },
+                "&:hover fieldset": {
+                  borderColor: currmode ? "#fff" : "#000",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: currmode ? "#fff" : "#000",
+                },
+              },
+            }}
+          />
+          {/* Add the Rating component here if needed */}
+          <Button
+            onClick={handleReviewSubmit}
+            variant="contained"
+            color="primary"
+          >
+            Submit Review
+          </Button>
         </Box>
       </Grid>
 
@@ -420,13 +425,9 @@ const Item = () => {
         open={snackbarOpen}
         autoHideDuration={6000}
         onClose={handleSnackbarClose}
-        TransitionComponent={Slide}
+        TransitionComponent={(props) => <Slide {...props} direction="up" />}
       >
-        <MuiAlert
-          onClose={handleSnackbarClose}
-          severity="success"
-          sx={{ width: "100%" }}
-        >
+        <MuiAlert elevation={6} variant="filled" onClose={handleSnackbarClose}>
           {snackbarMessage}
         </MuiAlert>
       </Snackbar>
