@@ -13,13 +13,13 @@ const ChatBox = () => {
 
   useEffect(() => {
     // Listen for incoming messages from the WebSocket server
-    socket.on("receiveMessage", (message) => {
+    socket.on("message", (message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
     });
 
     // Cleanup on component unmount
     return () => {
-      socket.off("receiveMessage");
+      socket.off("message");
     };
   }, []);
 
@@ -31,7 +31,7 @@ const ChatBox = () => {
     if (input.trim()) {
       const userMessage = { role: "user", content: input };
       setMessages((prev) => [...prev, userMessage]);
-      socket.emit("sendMessage", userMessage); // Send message to the WebSocket server
+      socket.emit("message", userMessage); // Send message to the WebSocket server
       setInput("");
     }
   };
