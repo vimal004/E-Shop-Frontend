@@ -2,46 +2,37 @@ import React, { useEffect, useState } from "react";
 import { Box, Typography, Button, TextField, IconButton } from "@mui/material";
 import ChatIcon from "@mui/icons-material/Chat";
 import CloseIcon from "@mui/icons-material/Close";
-import axios from "axios";
+import io from "socket.io-client"; // Import socket.io-client
+
+const socket = io("https://e-shop-ws.vercel.app"); // Replace with your WebSocket server URL
 
 const ChatBox = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [open, setOpen] = useState(false);
 
+  useEffect(() => {
+    // Listen for incoming messages from the WebSocket server
+    socket.on("receiveMessage", (message) => {
+      setMessages((prevMessages) => [...prevMessages, message]);
+    });
+
+    // Cleanup on component unmount
+    return () => {
+      socket.off("receiveMessage");
+    };
+  }, []);
+
   const toggleChatBox = () => {
     setOpen(!open);
   };
 
-  const sendMessage = async () => {
+  const sendMessage = () => {
     if (input.trim()) {
       const userMessage = { role: "user", content: input };
       setMessages((prev) => [...prev, userMessage]);
+      socket.emit("sendMessage", userMessage); // Send message to the WebSocket server
       setInput("");
-
-      try {
-        const response = await axios.post(
-          "https://api.openai.com/v1/chat/completions",
-          {
-            model: "gpt-3.5-turbo",
-            messages: [...messages, userMessage],
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        const botMessage = {
-          role: "assistant",
-          content: response.data.choices[0].message.content,
-        };
-        setMessages((prev) => [...prev, userMessage, botMessage]);
-      } catch (error) {
-        console.error("Error fetching response:", error);
-      }
     }
   };
 
@@ -77,7 +68,7 @@ const ChatBox = () => {
                   textAlign: msg.role === "user" ? "right" : "left",
                 }}
               >
-                <strong>{msg.role === "user" ? "You:" : "Bot:"} </strong>
+                <strong>{msg.role === "user" ? "You:" : "Support:"} </strong>
                 {msg.content}
               </Typography>
             ))}
