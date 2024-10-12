@@ -4,7 +4,7 @@ import ChatIcon from "@mui/icons-material/Chat";
 import CloseIcon from "@mui/icons-material/Close";
 import io from "socket.io-client"; // Import socket.io-client
 
-const socket = io("https://e-shop-ws.vercel.app"); // Replace with your WebSocket server URL
+const socket = io("http://localhost:3000"); // Replace with your WebSocket server URL
 
 const ChatBox = () => {
   const [messages, setMessages] = useState([]);
