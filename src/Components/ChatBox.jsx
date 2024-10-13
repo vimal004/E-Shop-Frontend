@@ -12,6 +12,7 @@ const ChatBox = () => {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    socket.emit("registerClient"); // Register as a client
     // Listen for incoming messages from the WebSocket server
     socket.on("message", (message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
