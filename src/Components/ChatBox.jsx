@@ -4,7 +4,7 @@ import ChatIcon from "@mui/icons-material/Chat";
 import CloseIcon from "@mui/icons-material/Close";
 import io from "socket.io-client"; // Import socket.io-client
 
-const socket = io("https://ws-tan.vercel.app");
+const socket = io("https://e-shop-ws.onrender.com");
 
 const ChatBox = () => {
   const [messages, setMessages] = useState([]);
