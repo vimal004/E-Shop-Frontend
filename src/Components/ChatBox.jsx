@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Box, Typography, Button, TextField, IconButton } from "@mui/material";
 import ChatIcon from "@mui/icons-material/Chat";
 import CloseIcon from "@mui/icons-material/Close";
-import io from "socket.io-client"; // Import socket.io-client
+import SendIcon from "@mui/icons-material/Send";
+import { motion } from "framer-motion";
+import io from "socket.io-client";
 
 const socket = io("https://e-shop-ws.onrender.com");
 
@@ -10,19 +12,23 @@ const ChatBox = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [open, setOpen] = useState(false);
+  const messageEndRef = useRef(null);
 
   useEffect(() => {
-    socket.emit("registerClient"); // Register as a client
-    // Listen for incoming messages from the WebSocket server
+    socket.emit("registerClient");
+
     socket.on("message", (message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
     });
 
-    // Cleanup on component unmount
     return () => {
       socket.off("message");
     };
   }, []);
+
+  useEffect(() => {
+    messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const toggleChatBox = () => {
     setOpen(!open);
@@ -32,61 +38,116 @@ const ChatBox = () => {
     if (input.trim()) {
       const userMessage = { role: "user", content: input };
       setMessages((prev) => [...prev, userMessage]);
-      console.log(userMessage);
-      socket.emit("message", userMessage); // Send message to the WebSocket server
+      socket.emit("message", userMessage);
       setInput("");
     }
   };
 
   return (
     <Box sx={{ position: "fixed", bottom: 20, right: 20, zIndex: 1000 }}>
-      <IconButton onClick={toggleChatBox}>
-        <ChatIcon />
-      </IconButton>
-      {open && (
-        <Box
-          sx={{
-            width: 300,
-            bgcolor: "white",
-            boxShadow: 3,
-            borderRadius: 2,
-            p: 2,
-            position: "absolute",
-            right: 0,
-            bottom: 60,
-            zIndex: 1000,
-          }}
+      <motion.div
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        transition={{ type: "spring", stiffness: 300 }}
+      >
+        <IconButton
+          onClick={toggleChatBox}
+          sx={{ bgcolor: "#4CAF50", color: "white", p: 2, boxShadow: 4 }}
         >
-          <IconButton onClick={toggleChatBox} sx={{ float: "right" }}>
-            <CloseIcon />
-          </IconButton>
-          <Typography variant="h6">Customer Support</Typography>
-          <Box sx={{ maxHeight: 200, overflowY: "auto", mb: 1 }}>
-            {messages.map((msg, index) => (
-              <Typography
-                key={index}
-                sx={{
-                  margin: "5px 0",
-                  textAlign: msg.role === "user" ? "right" : "left",
-                }}
-              >
-                <strong>{msg.role === "user" ? "You:" : "Support:"} </strong>
-                {msg.content}
+          <ChatIcon />
+        </IconButton>
+      </motion.div>
+      {open && (
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 50 }}
+          transition={{ type: "spring", stiffness: 300 }}
+        >
+          <Box
+            sx={{
+              width: 320,
+              height: 400,
+              bgcolor: "white",
+              boxShadow: 6,
+              borderRadius: 4,
+              p: 2,
+              position: "absolute",
+              right: 0,
+              bottom: 60,
+              zIndex: 1000,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                Customer Support
               </Typography>
-            ))}
+              <IconButton onClick={toggleChatBox} sx={{ color: "#FF3D00" }}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+            <Box sx={{ flexGrow: 1, overflowY: "auto", p: 1, mt: 2 }}>
+              {messages.map((msg, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    display: "flex",
+                    justifyContent:
+                      msg.role === "user" ? "flex-end" : "flex-start",
+                    mb: 1,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      maxWidth: "75%",
+                      p: 1.5,
+                      bgcolor: msg.role === "user" ? "#4CAF50" : "#E0E0E0",
+                      color: msg.role === "user" ? "white" : "black",
+                      borderRadius: 2,
+                      boxShadow: 3,
+                    }}
+                  >
+                    <Typography variant="body2">
+                      <strong>
+                        {msg.role === "user" ? "You" : "Support"}:{" "}
+                      </strong>
+                      {msg.content}
+                    </Typography>
+                  </Box>
+                </Box>
+              ))}
+              <div ref={messageEndRef} />
+            </Box>
+            <TextField
+              fullWidth
+              variant="outlined"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+              placeholder="Type a message..."
+              sx={{ mb: 1 }}
+            />
+            <Button
+              onClick={sendMessage}
+              variant="contained"
+              sx={{
+                bgcolor: "linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)",
+                color: "white",
+              }}
+              endIcon={<SendIcon />}
+            >
+              Send
+            </Button>
           </Box>
-          <TextField
-            fullWidth
-            variant="outlined"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && sendMessage()}
-            placeholder="Type a message..."
-          />
-          <Button onClick={sendMessage} variant="contained" sx={{ mt: 1 }}>
-            Send
-          </Button>
-        </Box>
+        </motion.div>
       )}
     </Box>
   );
