@@ -1,9 +1,15 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Box, Typography, Button, TextField, IconButton } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Button,
+  TextField,
+  IconButton,
+  Fade,
+} from "@mui/material";
 import ChatIcon from "@mui/icons-material/Chat";
 import CloseIcon from "@mui/icons-material/Close";
 import SendIcon from "@mui/icons-material/Send";
-import { motion } from "framer-motion";
 import io from "socket.io-client";
 
 const socket = io("https://e-shop-ws.onrender.com");
@@ -45,110 +51,117 @@ const ChatBox = () => {
 
   return (
     <Box sx={{ position: "fixed", bottom: 20, right: 20, zIndex: 1000 }}>
-      <motion.div
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        transition={{ type: "spring", stiffness: 300 }}
+      <IconButton
+        onClick={toggleChatBox}
+        sx={{
+          bgcolor: "primary.main",
+          color: "white",
+          "&:hover": {
+            bgcolor: "primary.dark",
+          },
+        }}
       >
-        <IconButton
-          onClick={toggleChatBox}
-          sx={{ bgcolor: "#4CAF50", color: "white", p: 2, boxShadow: 4 }}
-        >
-          <ChatIcon />
-        </IconButton>
-      </motion.div>
-      {open && (
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 50 }}
-          transition={{ type: "spring", stiffness: 300 }}
+        <ChatIcon />
+      </IconButton>
+
+      <Fade in={open}>
+        <Box
+          sx={{
+            width: 300,
+            bgcolor: "background.paper",
+            boxShadow: 3,
+            borderRadius: 2,
+            p: 2,
+            position: "absolute",
+            right: 0,
+            bottom: 60,
+            display: "flex",
+            flexDirection: "column",
+            transition: "0.3s",
+            zIndex: 1000,
+          }}
         >
           <Box
             sx={{
-              width: 320,
-              height: 400,
-              bgcolor: "white",
-              boxShadow: 6,
-              borderRadius: 4,
-              p: 2,
-              position: "absolute",
-              right: 0,
-              bottom: 60,
-              zIndex: 1000,
               display: "flex",
-              flexDirection: "column",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 1,
             }}
           >
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
+            <Typography variant="h6">Customer Support</Typography>
+            <IconButton
+              onClick={toggleChatBox}
+              sx={{ color: "text.secondary" }}
             >
-              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                Customer Support
-              </Typography>
-              <IconButton onClick={toggleChatBox} sx={{ color: "#FF3D00" }}>
-                <CloseIcon />
-              </IconButton>
-            </Box>
-            <Box sx={{ flexGrow: 1, overflowY: "auto", p: 1, mt: 2 }}>
-              {messages.map((msg, index) => (
+              <CloseIcon />
+            </IconButton>
+          </Box>
+          <Box
+            sx={{
+              flexGrow: 1,
+              overflowY: "auto",
+              mb: 1,
+              maxHeight: 200,
+              padding: 1,
+              border: "1px solid #e0e0e0",
+              borderRadius: 1,
+              backgroundColor: "#f9f9f9",
+            }}
+          >
+            {messages.map((msg, index) => (
+              <Box
+                key={index}
+                sx={{
+                  mb: 1,
+                  display: "flex",
+                  justifyContent:
+                    msg.role === "user" ? "flex-end" : "flex-start",
+                }}
+              >
                 <Box
-                  key={index}
                   sx={{
-                    display: "flex",
-                    justifyContent:
-                      msg.role === "user" ? "flex-end" : "flex-start",
-                    mb: 1,
+                    maxWidth: "70%",
+                    bgcolor: msg.role === "user" ? "primary.main" : "grey.300",
+                    color: msg.role === "user" ? "white" : "black",
+                    borderRadius: 2,
+                    padding: 1,
+                    boxShadow: 1,
+                    transition: "background-color 0.3s",
                   }}
                 >
-                  <Box
-                    sx={{
-                      maxWidth: "75%",
-                      p: 1.5,
-                      bgcolor: msg.role === "user" ? "#4CAF50" : "#E0E0E0",
-                      color: msg.role === "user" ? "white" : "black",
-                      borderRadius: 2,
-                      boxShadow: 3,
-                    }}
-                  >
-                    <Typography variant="body2">
-                      <strong>
-                        {msg.role === "user" ? "You" : "Support"}:{" "}
-                      </strong>
-                      {msg.content}
-                    </Typography>
-                  </Box>
+                  <Typography variant="body2">
+                    <strong>{msg.role === "user" ? "You" : "Support"}:</strong>{" "}
+                    {msg.content}
+                  </Typography>
                 </Box>
-              ))}
-              <div ref={messageEndRef} />
-            </Box>
-            <TextField
-              fullWidth
-              variant="outlined"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && sendMessage()}
-              placeholder="Type a message..."
-              sx={{ mb: 1 }}
-            />
-            <Button
-              onClick={sendMessage}
-              variant="contained"
-              sx={{
-                bgcolor: "linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)",
-                color: "white",
-              }}
-              endIcon={<SendIcon />}
-            >
-              Send
-            </Button>
+              </Box>
+            ))}
+            <div ref={messageEndRef} />
           </Box>
-        </motion.div>
-      )}
+          <TextField
+            fullWidth
+            variant="outlined"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+            placeholder="Type a message..."
+            sx={{ mb: 1 }}
+          />
+          <Button
+            onClick={sendMessage}
+            variant="contained"
+            sx={{
+              bgcolor: "primary.main",
+              color: "white",
+              "&:hover": { bgcolor: "primary.dark" },
+            }}
+            endIcon={<SendIcon />}
+          >
+            Send
+          </Button>
+        </Box>
+      </Fade>
     </Box>
   );
 };
