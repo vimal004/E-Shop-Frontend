@@ -17,7 +17,7 @@ const socket = io("https://e-shop-ws.onrender.com");
 const ChatBox = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const [open, setOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const messageEndRef = useRef(null);
 
   useEffect(() => {
@@ -37,7 +37,7 @@ const ChatBox = () => {
   }, [messages]);
 
   const toggleChatBox = () => {
-    setOpen(!open);
+    setIsOpen((prev) => !prev);
   };
 
   const sendMessage = () => {
@@ -64,7 +64,7 @@ const ChatBox = () => {
         <ChatIcon />
       </IconButton>
 
-      <Fade in={open}>
+      <Fade in={isOpen}>
         <Box
           sx={{
             width: 300,
@@ -78,7 +78,6 @@ const ChatBox = () => {
             display: "flex",
             flexDirection: "column",
             transition: "0.3s",
-            zIndex: 1000,
           }}
         >
           <Box
