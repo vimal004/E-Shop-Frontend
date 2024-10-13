@@ -21,14 +21,29 @@ const ChatBox = () => {
   const messageEndRef = useRef(null);
 
   useEffect(() => {
+    // Emit registerClient event when the component mounts
     socket.emit("registerClient");
 
     socket.on("message", (message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
     });
 
+    // Automatically attempt to reconnect when disconnected
+    socket.on("disconnect", () => {
+      console.log("Disconnected from server");
+    });
+
+    socket.on("connect", () => {
+      console.log("Reconnected to server");
+      // Optionally, re-register the client
+      socket.emit("registerClient");
+    });
+
     return () => {
+      // Clean up listeners when the component unmounts
       socket.off("message");
+      socket.off("disconnect");
+      socket.off("connect");
     };
   }, []);
 
