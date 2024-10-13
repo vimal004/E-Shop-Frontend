@@ -4,7 +4,7 @@ import ChatIcon from "@mui/icons-material/Chat";
 import CloseIcon from "@mui/icons-material/Close";
 import io from "socket.io-client"; // Import socket.io-client
 
-const socket = io("https://e-shop-ws.onrender.com"); // Replace with your WebSocket server URL
+const socket = io("https://e-shop-gamma-sepia.vercel.app");
 
 const ChatBox = () => {
   const [messages, setMessages] = useState([]);
@@ -32,6 +32,7 @@ const ChatBox = () => {
     if (input.trim()) {
       const userMessage = { role: "user", content: input };
       setMessages((prev) => [...prev, userMessage]);
+      console.log(userMessage);
       socket.emit("message", userMessage); // Send message to the WebSocket server
       setInput("");
     }
